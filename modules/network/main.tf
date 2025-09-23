@@ -72,3 +72,26 @@ resource "aws_route_table_association" "public" {
   subnet_id      = each.value.id
   route_table_id = aws_route_table.public.id
 }
+
+# AZごとにNAT Gatewayを配置するため、ECS用のルートテーブルもAZごとに作成
+resource "aws_route_table" "ecs" {
+  for_each = aws_subnet.ecs
+  vpc_id   = aws_vpc.main.id
+
+  tags = {
+    Name = "${var.common.prefix}-${var.common.environment}-ecs-rt-1${each.key}"
+  }
+}
+
+resource "aws_route" "ecs" {
+  for_each               = aws_route_table.ecs
+  route_table_id         = each.value.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_nat_gateway.main[each.key].id
+}
+
+resource "aws_route_table_association" "ecs" {
+  for_each       = aws_subnet.ecs
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.ecs[each.key].id
+}
