@@ -1,3 +1,4 @@
+## VPC
 resource "aws_vpc" "main" {
   cidr_block           = var.network.vpc_cidr
   enable_dns_hostnames = true
@@ -8,6 +9,7 @@ resource "aws_vpc" "main" {
   }
 }
 
+## Subnet
 resource "aws_subnet" "public" {
   for_each          = toset(var.common.availability_zones)
   vpc_id            = aws_vpc.main.id
@@ -30,6 +32,7 @@ resource "aws_subnet" "ecs" {
   }
 }
 
+## Internet Gateway & NAT Gateway
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
@@ -53,6 +56,7 @@ resource "aws_nat_gateway" "main" {
   }
 }
 
+## Route Table
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
@@ -94,4 +98,58 @@ resource "aws_route_table_association" "ecs" {
   for_each       = aws_subnet.ecs
   subnet_id      = each.value.id
   route_table_id = aws_route_table.ecs[each.key].id
+}
+
+## Security Group
+resource "aws_security_group" "alb" {
+  name   = "${var.common.prefix}-${var.common.environment}-alb-https-sg"
+  vpc_id = aws_vpc.main.id
+  tags = {
+    Name = "${var.common.prefix}-${var.common.environment}-alb-https-sg"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "alb_from_https" {
+  security_group_id = aws_security_group.alb.id
+  ip_protocol       = "tcp"
+  from_port         = 443
+  to_port           = 443
+  cidr_ipv4         = "0.0.0.0/0"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "alb_from_admin" {
+  security_group_id = aws_security_group.alb.id
+  ip_protocol       = "tcp"
+  from_port         = 9000
+  to_port           = 9000
+  # TODO: Restrict the source IP range
+  cidr_ipv4 = "0.0.0.0/0"
+}
+
+resource "aws_security_group_egress_rule" "alb_to_all" {
+  security_group_id = aws_security_group.alb.id
+  ip_protocol       = "-1"
+  cidr_ipv4         = "0.0.0.0/0"
+}
+
+resource "aws_security_group" "ecs" {
+  name   = "${var.common.prefix}-${var.common.environment}-ecs-sg"
+  vpc_id = aws_vpc.main.id
+  tags = {
+    Name = "${var.common.prefix}-${var.common.environment}-ecs-sg"
+  }
+}
+
+resource "aws_security_group_ingress_rule" "ecs_from_alb" {
+  security_group_id            = aws_security_group.ecs.id
+  ip_protocol                  = "tcp"
+  from_port                    = 80
+  to_port                      = 80
+  referenced_security_group_id = aws_security_group.alb.id
+}
+
+resource "aws_vpc_security_group_egress_rule" "ecs_to_all" {
+  security_group_id = aws_security_group.ecs.id
+  ip_protocol       = "-1"
+  cidr_ipv4         = "0.0.0.0/0"
 }
