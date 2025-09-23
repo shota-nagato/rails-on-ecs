@@ -26,3 +26,9 @@ module "alb" {
   common  = local.common
   network = module.network
 }
+
+module "ecr" {
+  source = "../../modules/ecr"
+
+  common = local.common
+}
