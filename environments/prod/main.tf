@@ -32,3 +32,19 @@ module "ecr" {
 
   common = local.common
 }
+
+module "ecs" {
+  source = "../../modules/ecs"
+
+  common             = local.common
+  network            = module.network
+  alb                = module.alb
+  ssm                = module.ssm
+  ecr_repository_url = module.ecr.ecr_repository_url
+}
+
+module "ssm" {
+  source = "../../modules/ssm"
+
+  common = local.common
+}
