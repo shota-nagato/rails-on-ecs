@@ -19,3 +19,10 @@ module "network" {
   common  = local.common
   network = local.network
 }
+
+module "alb" {
+  source = "../../modules/alb"
+
+  common  = local.common
+  network = module.network
+}
