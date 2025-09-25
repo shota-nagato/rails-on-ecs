@@ -12,7 +12,7 @@ resource "aws_lb" "main" {
 
 resource "aws_lb_target_group" "main" {
   name        = "${var.common.prefix}-${var.common.environment}-tg"
-  port        = 80
+  port        = 3000
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = var.network.vpc_id
