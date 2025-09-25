@@ -32,6 +32,17 @@ resource "aws_subnet" "ecs" {
   }
 }
 
+resource "aws_subnet" "rds" {
+  for_each          = toset(var.common.availability_zones)
+  vpc_id            = aws_vpc.main.id
+  availability_zone = "${var.common.region}${each.value}"
+  cidr_block        = cidrsubnet(aws_vpc.main.cidr_block, 4, index(var.common.availability_zones, each.value) + length(var.common.availability_zones) * 2)
+
+  tags = {
+    Name = "${var.common.prefix}-${var.common.environment}-private-subnet-rds-1${each.value}"
+  }
+}
+
 ## Internet Gateway & NAT Gateway
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
@@ -118,7 +129,7 @@ resource "aws_vpc_security_group_ingress_rule" "alb_from_https" {
   cidr_ipv4 = "0.0.0.0/0"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "alb_to_all" {
+resource "aws_vpc_security_group_egress_rule" "alb_to_all" {
   security_group_id = aws_security_group.alb.id
   ip_protocol       = "-1"
   cidr_ipv4         = "0.0.0.0/0"
@@ -135,8 +146,8 @@ resource "aws_security_group" "ecs" {
 resource "aws_vpc_security_group_ingress_rule" "ecs_from_alb" {
   security_group_id            = aws_security_group.ecs.id
   ip_protocol                  = "tcp"
-  from_port                    = 80
-  to_port                      = 80
+  from_port                    = 3000
+  to_port                      = 3000
   referenced_security_group_id = aws_security_group.alb.id
 }
 
@@ -144,4 +155,20 @@ resource "aws_vpc_security_group_egress_rule" "ecs_to_all" {
   security_group_id = aws_security_group.ecs.id
   ip_protocol       = "-1"
   cidr_ipv4         = "0.0.0.0/0"
+}
+
+resource "aws_security_group" "rds" {
+  name   = "${var.common.prefix}-${var.common.environment}-rds-sg"
+  vpc_id = aws_vpc.main.id
+  tags = {
+    Name = "${var.common.prefix}-${var.common.environment}-rds-sg"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "rds_from_ecs" {
+  security_group_id            = aws_security_group.rds.id
+  ip_protocol                  = "tcp"
+  from_port                    = 5432
+  to_port                      = 5432
+  referenced_security_group_id = aws_security_group.ecs.id
 }

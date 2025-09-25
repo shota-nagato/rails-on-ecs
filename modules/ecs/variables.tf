@@ -26,6 +26,7 @@ variable "alb" {
 variable "ssm" {
   type = object({
     rails_master_key_name = string
+    database_url_name     = string
   })
 }
 

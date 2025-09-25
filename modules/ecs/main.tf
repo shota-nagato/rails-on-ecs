@@ -19,7 +19,7 @@ resource "aws_ecs_task_definition" "web" {
       essential = true
       portMappings = [
         {
-          containerPort = 80
+          containerPort = 3000
           protocol      = "tcp"
         }
       ]
@@ -35,6 +35,10 @@ resource "aws_ecs_task_definition" "web" {
         {
           name      = "RAILS_MASTER_KEY"
           valueFrom = var.ssm.rails_master_key_name
+        },
+        {
+          name      = "DATABASE_URL"
+          valueFrom = var.ssm.database_url_name
         }
       ]
     }
@@ -68,7 +72,7 @@ resource "aws_ecs_service" "web" {
   load_balancer {
     target_group_arn = var.alb.alb_target_group_arn
     container_name   = "web"
-    container_port   = 80
+    container_port   = 3000
   }
 }
 

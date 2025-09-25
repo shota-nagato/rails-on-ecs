@@ -46,5 +46,15 @@ module "ecs" {
 module "ssm" {
   source = "../../modules/ssm"
 
-  common = local.common
+  common      = local.common
+  db_info     = var.db_info
+  db_endpoint = module.rds.db_endpoint
+}
+
+module "rds" {
+  source = "../../modules/rds"
+
+  common  = local.common
+  network = module.network
+  db_info = var.db_info
 }
