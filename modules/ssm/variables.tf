@@ -5,6 +5,14 @@ variable "common" {
   })
 }
 
+variable "secrets" {
+  type = object({
+    rails_master_key = string
+  })
+
+  sensitive = true
+}
+
 variable "db_info" {
   type = object({
     name     = string
