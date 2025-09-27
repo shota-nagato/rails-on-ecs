@@ -34,11 +34,23 @@ resource "aws_ecs_task_definition" "web" {
       secrets = [
         {
           name      = "RAILS_MASTER_KEY"
-          valueFrom = var.ssm.rails_master_key_name
+          valueFrom = var.ssm.rails_master_key_arn
         },
         {
-          name      = "DATABASE_URL"
-          valueFrom = var.ssm.database_url_name
+          name      = "DB_HOST"
+          valueFrom = "${var.secrets_manager.secret_for_db_credentials_arn}:host::"
+        },
+        {
+          name      = "DB_NAME"
+          valueFrom = "${var.secrets_manager.secret_for_db_credentials_arn}:db_name::"
+        },
+        {
+          name      = "DB_USERNAME"
+          valueFrom = "${var.secrets_manager.secret_for_db_credentials_arn}:username::"
+        },
+        {
+          name      = "DB_PASSWORD"
+          valueFrom = "${var.secrets_manager.secret_for_db_credentials_arn}:password::"
         }
       ]
     }
@@ -92,15 +104,47 @@ data "aws_iam_policy_document" "trust_policy_for_task_execution_role" {
   }
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_exec_task_execution" {
-  role       = aws_iam_role.task_execution_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+# policy for Secrets Manager
+resource "aws_iam_policy" "policy_for_access_to_secrets_manager" {
+  name   = "${var.common.prefix}-${var.common.environment}-policy-for-access-to-secrets-manager"
+  policy = data.aws_iam_policy_document.policy_for_access_to_secrets_manager.json
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_ssm_read" {
-  role = aws_iam_role.task_execution_role.name
-  # TODO: 最小権限にする
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess"
+data "aws_iam_policy_document" "policy_for_access_to_secrets_manager" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "secretsmanager:GetSecretValue",
+    ]
+    resources = [var.secrets_manager.secret_for_db_credentials_arn]
+  }
+}
+
+# policy for SSM Parameter Store
+resource "aws_iam_policy" "policy_for_access_to_ssm_parameter" {
+  name   = "${var.common.prefix}-${var.common.environment}-policy-for-access-to-ssm-parameter"
+  policy = data.aws_iam_policy_document.policy_for_access_to_ssm_parameter.json
+}
+
+data "aws_iam_policy_document" "policy_for_access_to_ssm_parameter" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "ssm:GetParameters",
+    ]
+    resources = [var.ssm.rails_master_key_arn]
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "task_execution_role" {
+  for_each = {
+    ecs            = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+    ssm            = aws_iam_policy.policy_for_access_to_ssm_parameter.arn
+    secretsmanager = aws_iam_policy.policy_for_access_to_secrets_manager.arn
+  }
+
+  role       = aws_iam_role.task_execution_role.name
+  policy_arn = each.value
 }
 
 resource "aws_cloudwatch_log_group" "web" {

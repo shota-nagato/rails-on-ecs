@@ -40,16 +40,23 @@ module "ecs" {
   network            = module.network
   alb                = module.alb
   ssm                = module.ssm
+  secrets_manager    = module.secrets_manager
   ecr_repository_url = module.ecr.ecr_repository_url
 }
 
 module "ssm" {
   source = "../../modules/ssm"
 
-  common      = local.common
-  secrets     = var.secrets
-  db_info     = var.db_info
-  db_endpoint = module.rds.db_endpoint
+  common  = local.common
+  secrets = var.secrets
+}
+
+module "secrets_manager" {
+  source = "../../modules/secrets_manager"
+
+  common  = local.common
+  rds     = module.rds
+  db_info = var.db_info
 }
 
 module "rds" {
