@@ -25,7 +25,7 @@ variable "alb" {
 
 variable "ssm" {
   type = object({
-    rails_master_key_name = string
+    rails_master_key_arn = string
   })
 }
 
