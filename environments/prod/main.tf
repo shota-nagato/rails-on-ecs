@@ -47,6 +47,7 @@ module "ssm" {
   source = "../../modules/ssm"
 
   common      = local.common
+  secrets     = var.secrets
   db_info     = var.db_info
   db_endpoint = module.rds.db_endpoint
 }
