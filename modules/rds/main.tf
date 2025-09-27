@@ -15,7 +15,7 @@ resource "aws_db_instance" "main" {
   # 本番環境では変更すること
   skip_final_snapshot = true
 
-  db_name  = var.db_info.name
+  db_name  = var.db_info.db_name
   username = var.db_info.username
   password = var.db_info.password
   port     = 5432

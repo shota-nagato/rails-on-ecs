@@ -26,7 +26,12 @@ variable "alb" {
 variable "ssm" {
   type = object({
     rails_master_key_name = string
-    database_url_name     = string
+  })
+}
+
+variable "secrets_manager" {
+  type = object({
+    secret_for_db_credentials_arn = string
   })
 }
 

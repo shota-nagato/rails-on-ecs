@@ -37,8 +37,20 @@ resource "aws_ecs_task_definition" "web" {
           valueFrom = var.ssm.rails_master_key_name
         },
         {
-          name      = "DATABASE_URL"
-          valueFrom = var.ssm.database_url_name
+          name      = "DB_HOST"
+          valueFrom = "${var.secrets_manager.secret_for_db_credentials_arn}:host::"
+        },
+        {
+          name      = "DB_NAME"
+          valueFrom = "${var.secrets_manager.secret_for_db_credentials_arn}:db_name::"
+        },
+        {
+          name      = "DB_USERNAME"
+          valueFrom = "${var.secrets_manager.secret_for_db_credentials_arn}:username::"
+        },
+        {
+          name      = "DB_PASSWORD"
+          valueFrom = "${var.secrets_manager.secret_for_db_credentials_arn}:password::"
         }
       ]
     }

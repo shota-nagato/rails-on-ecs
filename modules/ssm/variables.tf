@@ -12,15 +12,3 @@ variable "secrets" {
 
   sensitive = true
 }
-
-variable "db_info" {
-  type = object({
-    name     = string
-    username = string
-    password = string
-  })
-}
-
-variable "db_endpoint" {
-  type = string
-}
