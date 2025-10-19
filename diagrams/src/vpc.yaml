@@ -1,0 +1,41 @@
+Diagram:
+  DefinitionFiles:
+    - Type: URL
+      Url: "https://raw.githubusercontent.com/awslabs/diagram-as-code/main/definitions/definition-for-aws-icons-light.yaml"
+
+  Resources:
+    Canvas:
+      Type: AWS::Diagram::Canvas
+      Direction: horizontal
+      Children:
+        - AWSCloud
+
+    AWSCloud:
+      Type: AWS::Diagram::Cloud
+      Direction: horizontal
+      Preset: AWSCloudNoLogo
+      Align: center
+      Children:
+        - Region
+
+    Region:
+      Type: AWS::Region
+      Direction: vertical
+      Title: ap-noartheast-1
+      Children:
+        - VPC
+
+    VPC:
+      Type: AWS::EC2::VPC
+      Direction: horizontal
+      Children:
+        - EmptyResource1
+        - EmptyResource2
+        - EmptyResource3
+
+    EmptyResource1:
+      Type: AWS::Diagram::Resource
+    EmptyResource2:
+      Type: AWS::Diagram::Resource
+    EmptyResource3:
+      Type: AWS::Diagram::Resource

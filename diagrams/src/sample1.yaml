@@ -1,0 +1,122 @@
+Diagram:
+  DefinitionFiles:
+    - Type: URL
+      Url: "https://raw.githubusercontent.com/awslabs/diagram-as-code/main/definitions/definition-for-aws-icons-light.yaml"
+
+  Resources:
+    Canvas:
+      Type: AWS::Diagram::Canvas
+      Direction: horizontal
+      Children:
+        - User
+        - AWSCloud
+
+    User:
+      Type: AWS::Diagram::Resource
+      Preset: User
+
+    AWSCloud:
+      Type: AWS::Diagram::Cloud
+      Direction: horizontal
+      Preset: AWSCloudNoLogo
+      Align: center
+      Children:
+        - Route53
+        - Regions
+
+    Route53:
+      Type: AWS::Route53
+
+    Regions:
+      Type: AWS::Diagram::HorizontalStack
+      Children:
+        - Region
+
+    Region:
+      Type: AWS::Region
+      Direction: vertical
+      Title: ap-noartheast-1
+      Children:
+        - VPC
+
+    AZs:
+      Type: AWS::Diagram::HorizontalStack
+      Children:
+        - AZ1A
+        - AZ1C
+
+    AZ1A:
+      Type: AWS::EC2::AvailabilityZone
+      Title: ap-noartheast-1a
+      Direction: vertical
+      Children:
+        - PublicSubnet1A
+        - ECSSubnet1A
+        - RDSSubnet1A
+
+    AZ1C:
+      Type: AWS::EC2::AvailabilityZone
+      Title: ap-northeast-1c
+      Direction: vertical
+      Children:
+        - PublicSubnet1C
+        - ECSSubnet1C
+        - RDSSubnet1C
+
+    VPC:
+      Type: AWS::EC2::VPC
+      Direction: horizontal
+      Children:
+        - AZs
+      BorderChildren:
+        - Position: N
+          Resource: IGW
+
+    IGW:
+      Type: AWS::EC2::InternetGateway
+      IconFill:
+        Type: rect
+
+    PublicSubnet1A:
+      Type: AWS::EC2::Subnet
+      Preset: PublicSubnet
+      Children:
+        - NatGateway1A
+
+    PublicSubnet1C:
+      Type: AWS::EC2::Subnet
+      Preset: PublicSubnet
+      Children:
+        - NatGateway1C
+
+    ECSSubnet1A:
+      Type: AWS::EC2::Subnet
+      Preset: PrivateSubnet
+      Children:
+        - ECSService1A
+
+    ECSSubnet1C:
+      Type: AWS::EC2::Subnet
+      Preset: PrivateSubnet
+      Children:
+        - ECSService1C
+
+    RDSSubnet1A:
+      Type: AWS::EC2::Subnet
+      Preset: PrivateSubnet
+
+    RDSSubnet1C:
+      Type: AWS::EC2::Subnet
+      Preset: PrivateSubnet
+
+    NatGateway1A:
+      Type: AWS::EC2::NatGateway
+
+    NatGateway1C:
+      Type: AWS::EC2::NatGateway
+
+    ECSService1A:
+      Type: AWS::ECS::Service
+
+    ECSService1C:
+      Type: AWS::ECS::Service
