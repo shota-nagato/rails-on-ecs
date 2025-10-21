@@ -7,3 +7,8 @@ db_info = {
 secrets = {
   rails_master_key = "your_rails_master_key"
 }
+
+domain_settings = {
+  base_domain = "example.com"
+}
+

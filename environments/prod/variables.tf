@@ -15,3 +15,11 @@ variable "db_info" {
 
   sensitive = true
 }
+
+variable "domain_settings" {
+  type = object({
+    base_domain   = string
+    domain_prefix = optional(string)
+  })
+}
+
