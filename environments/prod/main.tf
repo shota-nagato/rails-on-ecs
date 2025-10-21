@@ -66,3 +66,12 @@ module "rds" {
   network = module.network
   db_info = var.db_info
 }
+
+module "acm" {
+  source = "../../modules/acm"
+
+  common = local.common
+  acm_settings = {
+    domain_name = local.domain_name
+  }
+}
