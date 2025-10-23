@@ -75,3 +75,9 @@ module "acm" {
     domain_name = local.domain_name
   }
 }
+
+module "s3_logs" {
+  source = "../../modules/s3_logs"
+
+  common = local.common
+}
